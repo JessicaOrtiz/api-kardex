@@ -6,8 +6,18 @@ var app = express();
 app.use(express.json());
 
 app.get('/calificaciones', function(req, res){
-    res.json({
-        mensaje: 'Bienvenido al API del kardex'
+    console.log('Token recibido ' + req.query.token);
+    jwt.verify(req.query.token, 'clavesecreta', function(error, token){
+        if(error)
+        {
+            res.status(403).json({mensaje: 'Autorización no valida'});
+        }
+        else
+        {
+            res.json({
+                mensaje: 'Bienvenido' + token.usuario + 'Aqui estan las calificaciones...'
+            });
+        }
     });
 });
 
@@ -16,11 +26,46 @@ app.listen(puerto, function(){
 });
 
 app.post('/login', function(req, res){
-    var token = jwt.sign({
-        usuario: 'alumno'
-    }, 'clavesecreta',{expiresIn: '60s'});
-    console.log('Token generado: ' + token);
-    res.json({
-        elToken: token
-    });
+    //simular la BD
+    var alumno = {
+        email: 'alumno@uaslp.mx',
+        password: '123'
+    };
+
+    var profesor = {
+        email: 'profesor@uaslp.mx',
+        password: 'abc'
+    };
+
+    if(req.body.email == alumno.email && req.body.password == alumno.password)
+    {
+        var token = jwt.sign({
+            usuario: 'alumno',
+            nombre: 'Jessi',
+            clave: 212121
+        }, 'clavesecreta',{expiresIn: '3h'});
+        console.log('Token generado: ' + token);
+        res.json({
+            mensaje: 'Bienvenido alumno',
+            elToken: token
+        });
+    }
+    else if(req.body.email == profesor.email && req.body.password == profesor.password)
+    {
+        var token = jwt.sign({
+            usuario: 'profesor',
+            nombre: 'Edd',
+            clave: 123
+        }, 'clavesecreta',{expiresIn: '60s'});
+        console.log('Token generado: ' + token);
+        res.json({
+            mensaje: 'Bienvenido Profesor',
+            elToken: token
+        });
+    }
+    else
+    {
+        res.status(401).json({mensaje: 'Credenciales no validas'});
+        elToken: null
+    }
 });
